@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>PHÂN TÍCH MD5 (Random)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #ff00ff88, 0 0 40px #00ffff44;
+      text-align: center;
+      width: 320px;
+      z-index: 10;
+      position: relative;
+    }
+    h2 {
+      color: #ff00ff;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+    }
+    input, select {
+      background: #333;
+      color: #fff;
+    }
+    button {
+      background: #ff00cc;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff3399;
+    }
+    .hidden {
+      display: none;
+    }
+    #result {
+      margin-top: 10px;
+      font-size: 15px;
+    }
+    #history {
+      text-align: left;
+      margin-top: 12px;
+      font-size: 13px;
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #toggleBtn {
+      background: #444;
+      color: #fff;
+      border: none;
+      margin-top: 10px;
+      padding: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    #sakura {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="sakura"></canvas>
+
+<div class="container" id="key-area">
+  <h2>🔐 Nhập License Key</h2>
+  <input type="password" id="license" placeholder="Nhập License Key...">
+  <button onclick="checkKey()">Kích Hoạt</button>
+</div>
+
+<div class="container hidden" id="main-app">
+  <h2>PHÂN TÍCH MD5</h2>
+
+  <label>🧠 Chọn Game</label>
+  <select id="gameType">
+    <option value="sunwin">SUNWIN</option>
+    <option value="b52">B52 CLUB</option>
+  </select>
+
+  <label>🧬 Nhập Mã MD5</label>
+  <input type="text" id="md5input" placeholder="(Không ảnh hưởng - kết quả random)">
+  <button onclick="randomResult()">Phân Tích</button>
+
+  <div id="result"></div>
+  <button onclick="toggleHistory()" id="toggleBtn">Ẩn/Hiện Lịch Sử</button>
+  <div id="history" class="hidden"></div>
+</div>
+
+<script>
+  const vipKey = "1";
+  const regularKey = "admin";
+  let historyList = [];
+
+  function checkKey() {
+    const inputKey = document.getElementById("license").value.trim();
+    if (inputKey === vipKey || inputKey === regularKey) {
+      document.getElementById("key-area").classList.add("hidden");
+      document.getElementById("main-app").classList.remove("hidden");
+    } else {
+      alert("❌ Key không hợp lệ!");
+    }
+  }
+
+  function randomResult() {
+    const game = document.getElementById("gameType").value;
+    const dice = [
+      Math.floor(Math.random() * 6) + 1,
+      Math.floor(Math.random() * 6) + 1,
+      Math.floor(Math.random() * 6) + 1
+    ];
+    const total = dice.reduce((a, b) => a + b, 0);
+    const resultText = total >= 11 ? "Tài" : "Xỉu";
+
+    const output = `
+      <p>🎮 <strong>Game:</strong> ${game.toUpperCase()}</p>
+      <p><strong>Kết quả:</strong> ${resultText} (${total})</p>
+      <p>🎲 <strong>Dice:</strong> ${dice.join(" - ")}</p>
+    `;
+
+    document.getElementById("result").innerHTML = output;
+
+    historyList.unshift(output);
+    if (historyList.length > 2) historyList = historyList.slice(0, 2);
+    document.getElementById("history").innerHTML = historyList.join("<hr>");
+  }
+
+  function toggleHistory() {
+    document.getElementById("history").classList.toggle("hidden");
+  }
+</script>
+
+<script>
+  const canvas = document.getElementById('sakura');
+  const ctx = canvas.getContext('2d');
+  const petals = [];
+  const petalCount = 30;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  class Petal {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * -canvas.height;
+      this.size = 8 + Math.random() * 8;
+      this.speedY = 1 + Math.random() * 2;
+      this.speedX = Math.random() * 2 - 1;
+      this.opacity = 0.6 + Math.random() * 0.4;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.y > canvas.height) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(255, 182, 193, ${this.opacity})`;
+      ctx.ellipse(this.x, this.y, this.size * 0.6, this.size, Math.PI / 4, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < petalCount; i++) {
+    petals.push(new Petal());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let petal of petals) {
+      petal.update();
+      petal.draw();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+</script>
+
+</body>
+</html>
